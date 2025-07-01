@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block description %}Admin panel for managing posts, categories, tags and site settings.{% endblock %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto mt-10">
+  <div class="flex justify-end mb-4">
+    <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2">
+      Logout
+    </a>
+  </div>
+  <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Admin Dashboard</h1>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    <!-- Categories -->
+    <a href="/admin/categories" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">📂 Manage Categories</h2>
+      <p class="text-gray-600 text-sm">Add, edit or delete blog categories for organizing your posts.</p>
+    </a>
+
+    <!-- Posts -->
+    <a href="/admin/posts/new" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">📝 Create New Post</h2>
+      <p class="text-gray-600 text-sm">Write new content and publish blog posts with rich metadata.</p>
+    </a>
+
+    <!-- Tags -->
+    <a href="/admin/tags" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">🏷️ Manage Tags</h2>
+      <p class="text-gray-600 text-sm">Create and assign tags to better classify your blog content.</p>
+    </a>
+
+    <!-- Site Settings -->
+    <a href="/admin/settings" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">⚙️ Site Settings</h2>
+      <p class="text-gray-600 text-sm">Update site title, SEO settings, analytics code and more.</p>
+    </a>
+  </div>
+</section>
+{% endblock %}

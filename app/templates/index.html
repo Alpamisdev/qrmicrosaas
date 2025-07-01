@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Free & Easy QR Code Generator - Simple QR Builder{% endblock %}
+{% block description %}
+Generate high-quality QR codes instantly with our free and easy-to-use online tool. Customize size, color, and download in PNG/SVG format.
+{% endblock %}
+
+{% block content %}
+<main class="bg-white rounded-2xl shadow p-6 max-w-3xl mx-auto space-y-6" aria-label="Main Content">
+  <h1 class="text-3xl font-extrabold text-gray-900 text-center">Free QR Code Generator</h1>
+  <p class="text-gray-600 text-center text-lg">
+    Create simple QR codes for links, text, and more. 100% free and no registration required.
+  </p>
+
+  <section aria-label="QR Code Generator Form">
+    <form id="qrForm" class="space-y-6" aria-label="QR Code Generator Form">
+      <label for="qrData" class="block text-sm font-medium text-gray-700">Your text or URL</label>
+      <input
+        type="text"
+        id="qrData"
+        name="qrData"
+        placeholder="Enter text or link here..."
+        class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        required
+        aria-required="true"
+      />
+
+      <!-- Options -->
+      <div class="flex flex-col md:flex-row md:items-center md:space-x-6 space-y-4 md:space-y-0">
+        <!-- Size -->
+        <div class="w-full md:w-1/3">
+          <label for="qrSize" class="block text-sm text-gray-600">Size</label>
+          <select
+            id="qrSize"
+            name="qrSize"
+            class="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="200">200 x 200</option>
+            <option value="500">500 x 500</option>
+            <option value="1000">1000 x 1000</option>
+            <option value="1500">1500 x 1500</option>
+            <option value="2000">2000 x 2000</option>
+          </select>
+        </div>
+
+        <!-- QR Color Picker -->
+        <div class="space-y-2" id="qrColorPicker">
+          <label class="text-sm font-medium text-gray-700">QR Color</label>
+          <div class="flex items-center gap-4">
+            <!-- Color Preview Box -->
+            <div class="w-10 h-10 rounded border border-gray-300 cursor-pointer" id="qrColorPreview" title="Click to pick color"></div>
+            <!-- Hidden Color Input -->
+            <input type="color" id="qrColor" class="sr-only" value="#000000" />
+            <!-- Hex Code Display -->
+            <span id="qrColorValue" class="text-sm font-mono text-gray-800">#000000</span>
+          </div>
+          <!-- Quick Swatches -->
+          <div class="flex gap-2 mt-2">
+            <button type="button" class="qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#000000" style="background-color: #000000"></button>
+            <button type="button" class="qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#2563eb" style="background-color: #2563eb"></button>
+            <button type="button" class="qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#059669" style="background-color: #059669"></button>
+            <button type="button" class="qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#7c3aed" style="background-color: #7c3aed"></button>
+            <button type="button" class="qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#1e293b" style="background-color: #1e293b"></button>
+          </div>
+        </div>
+
+        <!-- Background Color Picker -->
+        <div class="space-y-2">
+          <label for="bgColor" class="block text-sm font-medium text-gray-700">Background Color</label>
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer" id="bgColorPreview"></div>
+            <input type="color" id="bgColor" value="#ffffff" class="sr-only" />
+            <span id="bgColorValue" class="font-mono text-sm text-gray-700">#ffffff</span>
+          </div>
+          <!-- Quick swatches -->
+          <div class="flex gap-2 mt-2">
+            <button type="button" class="bg-swatch w-8 h-8 rounded-lg border border-gray-300 hover:ring-2 hover:ring-blue-400" data-color="#ffffff" style="background-color: #ffffff;"></button>
+            <button type="button" class="bg-swatch w-8 h-8 rounded-lg border border-gray-300 hover:ring-2 hover:ring-blue-400" data-color="#f9fafb" style="background-color: #f9fafb;"></button>
+            <button type="button" class="bg-swatch w-8 h-8 rounded-lg border border-gray-300 hover:ring-2 hover:ring-blue-400" data-color="#eff6ff" style="background-color: #eff6ff;"></button>
+            <button type="button" class="bg-swatch w-8 h-8 rounded-lg border border-gray-300 hover:ring-2 hover:ring-blue-400" data-color="#ecfdf5" style="background-color: #ecfdf5;"></button>
+            <button type="button" class="bg-swatch w-8 h-8 rounded-lg border border-gray-300 hover:ring-2 hover:ring-blue-400" data-color="#f5f3ff" style="background-color: #f5f3ff;"></button>
+          </div>
+        </div>          
+      </div>
+
+      <div class="flex flex-wrap gap-4 mt-6 justify-center">
+        <button type="submit" id="generateBtn"
+          class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Generate QR Code
+        </button>
+        <button type="reset" id="resetBtn"
+          class="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg shadow transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Reset
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section id="qrResult" class="flex flex-col items-center min-h-[200px] mt-8" aria-live="polite" aria-label="QR Code Result">
+    <div id="qrCodeContainer"></div>
+  </section>
+  <section id="qrActions" class="flex justify-center gap-4 mt-6 hidden" aria-label="QR Code Actions">
+    <button
+        id="downloadBtn"
+        class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+    >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download
+    </button>
+    <button
+        id="copyBtn"
+        class="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2"
+    >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy
+    </button>
+  </section>
+</main>
+
+<!-- Only include main.js, remove all other inline scripts -->
+<script src="/static/main.js"></script>
+{% endblock %}

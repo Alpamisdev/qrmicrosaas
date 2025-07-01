@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', path='favicon.png') }}">
+
+  <!-- Tailwind CSS -->
+   <title>{% block title %}Simple QR Generator{% endblock %}</title>
+    <meta name="description" content="{% block description %}Free and simple QR code generator{% endblock %}">
+    <meta name="keywords" content="QR code generator, free QR, SVG QR code, PNG QR, create QR online, qr builder" />
+    <meta name="author" content="Simple QR Generator" />
+    <link rel="canonical" href="{{ request.url }}" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ request.url }}" />
+    <meta property="og:title" content="{{ self.title() }}" />
+    <meta property="og:description" content="{{ self.description() }}" />
+    <meta property="og:image" content="{{ url_for('static', path='preview.jpg') }}" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="{{ request.url }}" />
+    <meta name="twitter:title" content="{{ self.title() }}" />
+    <meta name="twitter:description" content="{{ self.description() }}" />
+    <meta name="twitter:image" content="{{ url_for('static', path='preview.jpg') }}" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="{{ url_for('static', path='main.css') }}" rel="stylesheet">
+
+  {% if site_settings and site_settings.google_analytics_code %}
+    {{ site_settings.google_analytics_code|safe }}
+  {% endif %}
+</head>
+
+<!-- QR Code library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-white shadow">
+  <div class="max-w-7xl mx-auto flex justify-between items-center p-4">
+    <a href="/" class="text-xl font-bold">Simple QR Generator</a>
+    <nav class="space-x-4">
+      <a href="/" class="hover:text-blue-600">Home</a>
+      <a href="/blog" class="hover:text-blue-600">Blog</a>
+    </nav>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="flex-1 max-w-7xl mx-auto p-4">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-gray-100 border-t mt-4">
+  <div class="max-w-7xl mx-auto p-4 flex flex-col md:flex-row justify-between text-gray-600 text-sm">
+    <span>© 2025 Simple QR Generator. All rights reserved.</span>
+    <div class="space-x-4 mt-2 md:mt-0">
+      <a href="/privacy" class="hover:underline">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<!-- AD BLOCK -->
+{% if site_settings and site_settings.ad_block_code %}
+  <div class="max-w-7xl mx-auto p-4">
+    {{ site_settings.ad_block_code|safe }}
+  </div>
+{% endif %}
+
+<!-- MAIN JS -->
+<script src="{{ url_for('static', path='main.js') }}"></script>
+
+</body>
+</html>

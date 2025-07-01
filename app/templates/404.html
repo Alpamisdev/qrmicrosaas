@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+{% block description %}Oops! The page you're looking for doesn't exist. Go back home or try another link.{% endblock %}
+
+{% block content %}
+<main aria-label="404 Not Found" class="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+  <section>
+    <h1 class="text-6xl font-extrabold text-blue-600">404</h1>
+    <p class="text-2xl font-semibold text-gray-800">Page Not Found</p>
+    <p class="text-gray-500">Sorry, we couldn't find the page you were looking for.</p>
+    <a href="/" class="mt-4 inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+      ← Go Back Home
+    </a>
+  </section>
+</main>
+{% endblock %}

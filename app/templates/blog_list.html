@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Blog - Insights & Guides | Simple QR Generator{% endblock %}
+{% block description %}
+Read our latest posts about QR technology, productivity hacks, and tools that help you build smarter solutions.
+{% endblock %}
+
+{% block content %}
+<main class="max-w-4xl mx-auto p-6 space-y-8" aria-label="Blog Content">
+  <h1 class="text-3xl font-extrabold text-gray-900 text-center">Latest Blog Posts</h1>
+  <section aria-label="Blog Post List">
+    {% if posts %}
+      <div class="space-y-6">
+        {% for post in posts %}
+          <article class="bg-white shadow-md rounded-xl p-6 hover:shadow-lg transition" itemscope itemtype="http://schema.org/Article">
+            <header>
+              <a href="/blog/{{ post.slug }}" class="block">
+                <h2 class="text-xl font-semibold text-blue-600 hover:underline" itemprop="headline">{{ post.title }}</h2>
+              </a>
+              <div class="flex items-center gap-2 mt-1">
+                <time datetime="{{ post.created_at.strftime('%Y-%m-%d') }}" class="text-sm text-gray-500" itemprop="datePublished">{{ post.created_at.strftime('%B %d, %Y') }}</time>
+                {% if post.category %}
+                  &middot; <a href="/blog?category={{ post.category.name }}" class="text-blue-500 hover:underline">{{ post.category.name }}</a>
+                {% endif %}
+              </div>
+            </header>
+            <p class="text-gray-600 mt-2" itemprop="description">{{ post.excerpt }}</p>
+            {% if post.tags %}
+              <ul class="flex flex-wrap gap-2 mt-2">
+                {% for tag in post.tags %}
+                  <li>
+                    <a href="/blog?tag={{ tag.name }}" rel="tag" class="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">{{ tag.name }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-center text-gray-500">No posts yet. Stay tuned!</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
