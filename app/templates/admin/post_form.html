@@ -29,14 +29,42 @@
 
     <!-- Content -->
     <div>
-      <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-      <textarea
-        id="content"
-        name="content"
-        rows="8"
-        required
-        class="w-full mt-1 p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >{{ post.content if post else '' }}</textarea>
+      <label for="content" class="block text-sm font-medium text-gray-700">Content (Markdown)</label>
+      <div class="mt-1 relative">
+        <textarea
+          id="content"
+          name="content"
+          rows="12"
+          required
+          class="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+        >{{ post.content if post else '' }}</textarea>
+        <div class="absolute top-2 right-2 space-x-2">
+          <button type="button" id="previewBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm">Preview</button>
+          <button type="button" id="helpBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm">Help</button>
+        </div>
+      </div>
+      <!-- Markdown Preview -->
+      <div id="preview" class="hidden mt-4 p-4 border border-gray-200 rounded-xl prose max-w-none"></div>
+      <!-- Markdown Help -->
+      <div id="help" class="hidden mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50 text-sm">
+        <h3 class="font-bold mb-2">Markdown Cheat Sheet</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="font-mono"># Heading 1</p>
+            <p class="font-mono">## Heading 2</p>
+            <p class="font-mono">**bold**</p>
+            <p class="font-mono">*italic*</p>
+            <p class="font-mono">[link](url)</p>
+          </div>
+          <div>
+            <p class="font-mono">- bullet list</p>
+            <p class="font-mono">1. numbered list</p>
+            <p class="font-mono">`code`</p>
+            <p class="font-mono">```language<br>code block<br>```</p>
+            <p class="font-mono">> blockquote</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Category -->
@@ -120,4 +148,44 @@
     </table>
   </div>
 </section>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const contentArea = document.getElementById('content');
+  const previewBtn = document.getElementById('previewBtn');
+  const helpBtn = document.getElementById('helpBtn');
+  const previewDiv = document.getElementById('preview');
+  const helpDiv = document.getElementById('help');
+
+  previewBtn.addEventListener('click', async function() {
+    const content = contentArea.value;
+    
+    try {
+      const response = await fetch('/admin/posts/preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: content })
+      });
+      
+      if (response.ok) {
+        const html = await response.text();
+        previewDiv.innerHTML = html;
+        previewDiv.classList.remove('hidden');
+        helpDiv.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('Preview failed:', error);
+    }
+  });
+
+  helpBtn.addEventListener('click', function() {
+    helpDiv.classList.toggle('hidden');
+    previewDiv.classList.add('hidden');
+  });
+});
+</script>
+{% endblock %}
 {% endblock %}

@@ -14,9 +14,15 @@
       {% endif %}
     </div>
   </header>
-  <section class="prose max-w-none" itemprop="articleBody">
-    {{ post.content | safe }}
+  
+  <section class="prose prose-lg max-w-none prose-headings:font-bold prose-a:text-blue-600 prose-code:bg-gray-100 prose-code:p-0.5 prose-code:rounded prose-pre:bg-gray-800 prose-pre:text-gray-100" itemprop="articleBody">
+    {% if post.rendered_content %}
+      {{ post.rendered_content | safe }}
+    {% else %}
+      <p class="text-gray-500 italic">No content available.</p>
+    {% endif %}
   </section>
+  
   {% if post.tags %}
     <footer class="mt-6">
       <h2 class="text-gray-600 text-sm font-semibold mb-2">Tags:</h2>

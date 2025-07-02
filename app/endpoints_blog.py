@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, Query
+from fastapi import APIRouter, Request, Depends, Query, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -8,6 +8,7 @@ from app.crud_tag import get_all_tags
 from app.crud_category import get_all_categories
 from app.models import PostStatus
 from fastapi.templating import Jinja2Templates
+from app.utils.markdown import convert_markdown_to_html
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -39,5 +40,18 @@ async def blog_list(request: Request, session: AsyncSession = Depends(get_async_
 async def blog_single(request: Request, slug: str, session: AsyncSession = Depends(get_async_session)):
     post = await get_post_by_slug(session, slug)
     if not post or post.status != PostStatus.published or getattr(post, 'is_deleted', False):
-        return RedirectResponse("/blog")
-    return templates.TemplateResponse("single_post.html", {"request": request, "post": post}) 
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Pre-render the Markdown content
+    if post.content:
+        post.rendered_content = convert_markdown_to_html(post.content)
+    else:
+        post.rendered_content = ""
+    
+    return templates.TemplateResponse(
+        "single_post.html",
+        {
+            "request": request,
+            "post": post,
+        }
+    ) 

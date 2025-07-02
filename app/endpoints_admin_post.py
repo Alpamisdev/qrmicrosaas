@@ -8,9 +8,14 @@ from app.models import PostStatus
 from fastapi.templating import Jinja2Templates
 import re
 from app.crud_tag import get_all_tags
+from app.utils.markdown import convert_markdown_to_html
+from pydantic import BaseModel
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+class PreviewRequest(BaseModel):
+    content: str
 
 def slugify(value: str) -> str:
     value = value.lower()
@@ -93,4 +98,10 @@ async def admin_post_delete(request: Request, post_id: int, session: AsyncSessio
     if not admin_id:
         return RedirectResponse("/admin/login")
     await update_post(session, post_id, is_deleted=True)
-    return RedirectResponse("/admin/posts/new", status_code=302) 
+    return RedirectResponse("/admin/posts/new", status_code=302)
+
+@router.post("/admin/posts/preview", response_class=HTMLResponse)
+async def preview_post(request: PreviewRequest):
+    """Preview Markdown content as HTML"""
+    html = convert_markdown_to_html(request.content)
+    return f'<div class="prose prose-lg max-w-none prose-headings:font-bold prose-a:text-blue-600 prose-code:bg-gray-100 prose-code:p-0.5 prose-code:rounded prose-pre:bg-gray-800 prose-pre:text-gray-100">{html}</div>' 

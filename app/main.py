@@ -13,6 +13,7 @@ from app.endpoints_category import router as category_router
 from app.endpoints_post import router as post_router
 from app.endpoints_settings import router as settings_router
 from app.endpoints_seo import router as seo_router
+from app.utils.markdown import convert_markdown_to_html
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud_post import create_post, get_all_posts, get_post, update_post, delete_post
 from app.crud_category import get_all_categories
@@ -40,6 +41,8 @@ app.include_router(blog_router)
 app.include_router(seo_router)
 
 templates = Jinja2Templates(directory="app/templates")
+
+templates.env.filters["markdown"] = lambda text: convert_markdown_to_html(text) if text else ""
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
