@@ -22,8 +22,10 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_async_se
     # Get all published blog posts
     posts = await get_all_posts(session)
     published_posts = [post for post in posts if post.status == PostStatus.published and not post.is_deleted]
-
-    xml_content = """<?xml version="1.0" encoding="UTF-8"?>
+    
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://qrgenerator.world/</loc>
@@ -42,20 +44,18 @@ async def sitemap(request: Request, session: AsyncSession = Depends(get_async_se
         <priority>0.3</priority>
         <changefreq>yearly</changefreq>
         <lastmod>{current_date}</lastmod>
-    </url>""".format(current_date=datetime.now().strftime("%Y-%m-%d"))
+    </url>"""
 
     # Add blog posts to sitemap
     for post in published_posts:
-        post_entry = """
+        post_date = str(post.created_at).split()[0] if post.created_at else current_date
+        post_entry = f"""
     <url>
-        <loc>https://qrgenerator.world/blog/{slug}</loc>
+        <loc>https://qrgenerator.world/blog/{post.slug}</loc>
         <priority>0.7</priority>
         <changefreq>monthly</changefreq>
-        <lastmod>{lastmod}</lastmod>
-    </url>""".format(
-            slug=post.slug,
-            lastmod=post.updated_at.strftime("%Y-%m-%d") if post.updated_at else datetime.now().strftime("%Y-%m-%d")
-        )
+        <lastmod>{post_date}</lastmod>
+    </url>"""
         xml_content += post_entry
 
     xml_content += "\n</urlset>"
