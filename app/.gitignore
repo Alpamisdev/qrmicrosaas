@@ -13,3 +13,4 @@ __pycache__/
 .coverage
 htmlcov/
 .pytest_cache/
+app.sqlite3
