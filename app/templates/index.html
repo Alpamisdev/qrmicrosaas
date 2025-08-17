@@ -7,12 +7,104 @@ Generate high-quality QR codes instantly with our free and easy-to-use online to
 
 {% block content %}
 <main class="bg-white rounded-2xl shadow p-6 max-w-3xl mx-auto space-y-6" aria-label="Main Content">
-  <h1 class="text-3xl font-extrabold text-gray-900 text-center">Free QR Code Generator</h1>
-  <p class="text-gray-600 text-center text-lg">
-    Create simple QR codes for links, text, and more. 100% free and no registration required.
-  </p>
+  <!-- Switcher -->
+  <div class="w-full flex justify-center">
+    <div class="inline-flex rounded-full border border-gray-200 bg-gray-50 p-1" role="tablist" aria-label="QR mode switcher">
+      <button id="btnSimple" type="button" role="tab" aria-selected="true" class="px-4 py-2 text-sm font-semibold rounded-full bg-white text-gray-900 shadow">
+        Simple QR Generator
+      </button>
+      <button id="btnDynamic" type="button" role="tab" aria-selected="false" class="px-4 py-2 text-sm font-semibold rounded-full text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-300">
+        Dynamic QR with Analytics
+      </button>
+    </div>
+  </div>
 
-  <section aria-label="QR Code Generator Form">
+  <!-- Dynamic Section -->
+  <section id="dynamicSection" class="hidden" aria-label="Dynamic QR">
+    <div class="rounded-xl border border-gray-200 bg-white p-6">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Dynamic QR with Analytics</h2>
+      <p class="text-gray-600 mb-4">Track scans by device, browser, and time. Manage links anytime from your dashboard.</p>
+      {% if request.session.get('user_id') %}
+      <form id="dynamicForm" class="space-y-6">
+        <div>
+          <label for="dynUrl" class="block text-sm font-medium text-gray-700">Destination URL</label>
+          <input type="url" id="dynUrl" name="dynUrl" placeholder="https://example.com" class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+        </div>
+        <div>
+          <label for="dynTitle" class="block text-sm text-gray-700">Title (optional)</label>
+          <input type="text" id="dynTitle" name="dynTitle" class="w-full p-3 border border-gray-300 rounded-xl" placeholder="My campaign" />
+        </div>
+        <!-- Options for dynamic QR -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label for="dynSize" class="block text-sm text-gray-600">Size</label>
+            <select id="dynSize" name="dynSize" class="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="200">200 x 200</option>
+              <option value="300" selected>300 x 300</option>
+              <option value="500">500 x 500</option>
+              <option value="1000">1000 x 1000</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">QR Color</label>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded border border-gray-300 cursor-pointer" id="dynQrColorPreview" title="Click to pick color" style="background-color:#000000"></div>
+              <input type="color" id="dynQrColor" class="sr-only" value="#000000" />
+              <span id="dynQrColorValue" class="text-sm font-mono text-gray-800">#000000</span>
+            </div>
+            <!-- Quick Swatches to match Simple section -->
+            <div class="flex gap-2 mt-2">
+              <button type="button" class="dyn-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#000000" style="background-color: #000000"></button>
+              <button type="button" class="dyn-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#2563eb" style="background-color: #2563eb"></button>
+              <button type="button" class="dyn-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#059669" style="background-color: #059669"></button>
+              <button type="button" class="dyn-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#7c3aed" style="background-color: #7c3aed"></button>
+              <button type="button" class="dyn-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#1e293b" style="background-color: #1e293b"></button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Background</label>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded border border-gray-300 cursor-pointer" id="dynBgColorPreview" title="Click to pick color" style="background-color:#ffffff"></div>
+              <input type="color" id="dynBgColor" class="sr-only" value="#ffffff" />
+              <span id="dynBgColorValue" class="text-sm font-mono text-gray-800">#ffffff</span>
+            </div>
+            <!-- Quick swatches to match Simple section -->
+            <div class="flex gap-2 mt-2">
+              <button type="button" class="dyn-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#ffffff" style="background-color: #ffffff;"></button>
+              <button type="button" class="dyn-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#f9fafb" style="background-color: #f9fafb;"></button>
+              <button type="button" class="dyn-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#eff6ff" style="background-color: #eff6ff;"></button>
+              <button type="button" class="dyn-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#ecfdf5" style="background-color: #ecfdf5;"></button>
+              <button type="button" class="dyn-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#f5f3ff" style="background-color: #f5f3ff;"></button>
+            </div>
+          </div>
+        </div>
+        <div class="text-right">
+          <button type="submit" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+            Create Dynamic QR
+          </button>
+        </div>
+      </form>
+      <div id="dynResult" class="flex flex-col items-center min-h-[200px] mt-6 hidden">
+        <div id="dynQrContainer"></div>
+        <div class="mt-4">
+          <a href="/my/dynamic" class="text-blue-600 hover:underline">View in Dashboard →</a>
+        </div>
+      </div>
+      {% else %}
+        <a href="/auth/login" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2">
+          Sign in to Create Dynamic QR
+        </a>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Simple Section -->
+  <section id="simpleSection" aria-label="QR Code Generator Form">
+    <h1 class="text-3xl font-extrabold text-gray-900 text-center">Free QR Code Generator</h1>
+    <p class="text-gray-600 text-center text-lg">
+      Create simple QR codes for links, text, and more. 100% free and no registration required.
+    </p>
+    
     <form id="qrForm" class="space-y-6" aria-label="QR Code Generator Form">
       <label for="qrData" class="block text-sm font-medium text-gray-700">Your text or URL</label>
       <input
@@ -84,11 +176,6 @@ Generate high-quality QR codes instantly with our free and easy-to-use online to
       </div>
 
       <div class="flex flex-wrap gap-4 mt-6 justify-center">
-        <button type="submit" id="generateBtn"
-          class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Generate QR Code
-        </button>
         <button type="reset" id="resetBtn"
           class="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg shadow transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -121,4 +208,171 @@ Generate high-quality QR codes instantly with our free and easy-to-use online to
 
 <!-- Only include main.js, remove all other inline scripts -->
 <script src="/static/main.js"></script>
+<script>
+  // Simple switcher behavior
+  (function(){
+    const btnDynamic = document.getElementById('btnDynamic');
+    const btnSimple = document.getElementById('btnSimple');
+    const dynamicSection = document.getElementById('dynamicSection');
+    const simpleSection = document.getElementById('simpleSection');
+    const simpleResultSection = document.getElementById('qrResult');
+    const dynamicQrResult = document.getElementById('dynQrContainer');
+    const dynamicResultWrapper = document.getElementById('dynResult');
+    function activate(mode){
+      if(mode === 'dynamic'){
+        dynamicSection.classList.remove('hidden');
+        simpleSection.classList.add('hidden');
+        btnDynamic.classList.add('bg-white','text-gray-900','shadow');
+        btnDynamic.setAttribute('aria-selected','true');
+        btnSimple.classList.remove('bg-white','text-gray-900','shadow');
+        btnSimple.setAttribute('aria-selected','false');
+        // reset/remove any previously generated simple QR
+        try { if (window.__clearSimpleQr) window.__clearSimpleQr(); } catch(e) {}
+        // belt and suspenders
+        if (simpleResultSection) simpleResultSection.innerHTML = '';
+        const simpleActions = document.getElementById('qrActions');
+        if (simpleActions) simpleActions.classList.add('hidden');
+      } else {
+        simpleSection.classList.remove('hidden');
+        dynamicSection.classList.add('hidden');
+        btnSimple.classList.add('bg-white','text-gray-900','shadow');
+        btnSimple.setAttribute('aria-selected','true');
+        btnDynamic.classList.remove('bg-white','text-gray-900','shadow');
+        btnDynamic.setAttribute('aria-selected','false');
+        // reset/remove any previously generated dynamic QR
+        if (dynamicQrResult) dynamicQrResult.innerHTML = '';
+        if (dynamicResultWrapper) dynamicResultWrapper.classList.add('hidden');
+      }
+    }
+    btnDynamic.addEventListener('click', ()=>activate('dynamic'));
+    btnSimple.addEventListener('click', ()=>activate('simple'));
+    // default to simple
+    activate('simple');
+  })();
+
+  // Dynamic QR creation: call API to create short link, then render QR only
+  (function(){
+    const form = document.getElementById('dynamicForm');
+    if (!form) return;
+    const urlInput = document.getElementById('dynUrl');
+    const titleInput = document.getElementById('dynTitle');
+    const sizeSelect = document.getElementById('dynSize');
+    const qrColorInput = document.getElementById('dynQrColor');
+    const qrColorPreview = document.getElementById('dynQrColorPreview');
+    const qrColorValue = document.getElementById('dynQrColorValue');
+    const bgColorInput = document.getElementById('dynBgColor');
+    const bgColorPreview = document.getElementById('dynBgColorPreview');
+    const bgColorValue = document.getElementById('dynBgColorValue');
+    const dynResult = document.getElementById('dynResult');
+    const dynQrContainer = document.getElementById('dynQrContainer');
+
+    // Color preview behavior
+    function bindColor(preview, input, valueEl){
+      preview.addEventListener('click', ()=> input.click());
+      input.addEventListener('input', ()=>{
+        preview.style.backgroundColor = input.value;
+        if (valueEl) valueEl.textContent = input.value;
+      });
+    }
+    bindColor(qrColorPreview, qrColorInput, qrColorValue);
+    bindColor(bgColorPreview, bgColorInput, bgColorValue);
+    // Swatch click handlers (match simple section behavior)
+    document.querySelectorAll('.dyn-qr-swatch').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const color = e.currentTarget.dataset.color;
+        qrColorInput.value = color;
+        qrColorInput.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+    document.querySelectorAll('.dyn-bg-swatch').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const color = e.currentTarget.dataset.color;
+        bgColorInput.value = color;
+        bgColorInput.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const destination_url = urlInput.value.trim();
+      const title = titleInput.value.trim();
+      const size = parseInt(sizeSelect.value, 10) || 300;
+      const colorDark = qrColorInput.value || '#000000';
+      const colorLight = bgColorInput.value || '#ffffff';
+      if (!destination_url) return;
+      try {
+        const resp = await fetch('/api/d/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination_url, title })
+        });
+        if (resp.status === 401) {
+          window.location.href = '/auth/login';
+          return;
+        }
+        if (!resp.ok) {
+          alert('Failed to create dynamic QR.');
+          return;
+        }
+        const data = await resp.json();
+        // Render QR for redirect_url, but do not show the short link
+        dynQrContainer.innerHTML = '';
+        const container = document.createElement('div');
+        new QRCode(container, {
+          text: window.location.origin + data.redirect_url,
+          width: size,
+          height: size,
+          colorDark,
+          colorLight,
+          correctLevel: QRCode.CorrectLevel.H,
+        });
+        dynQrContainer.appendChild(container);
+        dynResult.classList.remove('hidden');
+      } catch (err) {
+        console.error(err);
+        alert('Something went wrong.');
+      }
+    });
+
+    // Reset dynamic QR UI when switching away
+    document.getElementById('btnSimple')?.addEventListener('click', () => {
+      dynQrContainer.innerHTML = '';
+      dynResult.classList.add('hidden');
+    });
+  })();
+
+  // --- Reset should clear the generated QR image (simple section) ---
+  (function () {
+    const form            = document.getElementById('qrForm');
+    const resetBtn        = document.getElementById('resetBtn');
+    const qrResult        = document.getElementById('qrResult');
+    const qrCodeContainer = document.getElementById('qrCodeContainer');
+    const qrActions       = document.getElementById('qrActions');
+
+    function clearSimpleQr() {
+      [qrCodeContainer, qrResult].forEach(root => {
+        if (!root) return;
+        root.querySelectorAll('img, canvas, svg').forEach(el => {
+          const src = el.getAttribute && el.getAttribute('src');
+          if (src && src.startsWith('blob:')) { try { URL.revokeObjectURL(src); } catch(_) {} }
+          el.remove();
+        });
+        if (root.style) root.style.backgroundImage = '';
+        // also clear inner HTML as a fallback
+        if (root === qrCodeContainer) root.innerHTML = '';
+      });
+      if (qrActions) qrActions.classList.add('hidden');
+    }
+
+    // Expose for switcher to call
+    window.__clearSimpleQr = clearSimpleQr;
+
+    if (form) {
+      form.addEventListener('reset', () => setTimeout(clearSimpleQr, 0));
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => clearSimpleQr());
+    }
+  })();
+  </script>
 {% endblock %}

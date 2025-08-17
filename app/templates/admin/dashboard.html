@@ -12,6 +12,28 @@
   </div>
   <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Admin Dashboard</h1>
 
+  <!-- User Stats -->
+  <div class="grid gap-6 md:grid-cols-3 mb-6">
+    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+      <p class="text-sm text-gray-500">Total Users</p>
+      <p class="text-3xl font-bold text-gray-900">{{ user_stats.total if user_stats else 0 }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+      <p class="text-sm text-gray-500">New (last 7 days)</p>
+      <p class="text-3xl font-bold text-gray-900">{{ user_stats.last_7_days if user_stats else 0 }}</p>
+    </div>
+    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+      <p class="text-sm text-gray-500">Recent Signups</p>
+      <ul class="mt-2 space-y-1 text-sm text-gray-700">
+        {% for u in user_stats.recent %}
+          <li>{{ u.email }} <span class="text-gray-400">·</span> {{ u.created_at }}</li>
+        {% else %}
+          <li class="text-gray-400">No users yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
   <div class="grid gap-6 md:grid-cols-2">
     <!-- Categories -->
     <a href="/admin/categories" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
@@ -35,6 +57,12 @@
     <a href="/admin/settings" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
       <h2 class="text-xl font-semibold text-gray-800 mb-2">⚙️ Site Settings</h2>
       <p class="text-gray-600 text-sm">Update site title, SEO settings, analytics code and more.</p>
+    </a>
+
+    <!-- User Stats -->
+    <a href="/admins/admin/users" class="bg-white hover:shadow-md p-6 rounded-2xl border border-gray-200 transition">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">👥 User Statistics</h2>
+      <p class="text-gray-600 text-sm">View detailed user growth and recent signups.</p>
     </a>
   </div>
 </section>

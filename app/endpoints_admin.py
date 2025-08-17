@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud_admin import (
     create_admin, get_admin, get_all_admins, update_admin, delete_admin
@@ -6,7 +6,12 @@ from app.crud_admin import (
 from app.models import Admin
 from typing import List
 from pydantic import BaseModel
-from app.db import get_async_session
+from app.db import get_async_session, AsyncSessionLocal
+from app.crud_user import count_users, count_users_since, list_recent_users, list_users_since
+from datetime import datetime, timedelta
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="app/templates")
 
 router = APIRouter(prefix="/admins", tags=["admins"])
 
@@ -50,3 +55,26 @@ async def delete_admin_view(admin_id: int, session: AsyncSession = Depends(get_a
     if not success:
         raise HTTPException(status_code=404, detail="Admin not found")
     return {"ok": True} 
+
+
+@router.get("/admin/users", tags=["admins"])
+async def admin_users_stats(request: Request):
+    # Require admin session
+    admin_id = request.session.get("admin_id")
+    if not admin_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    async with AsyncSessionLocal() as session:
+        total = await count_users(session)
+        last_7_days = await count_users_since(session, datetime.utcnow() - timedelta(days=7))
+        recent = await list_recent_users(session, limit=50)
+        last_30_list = await list_users_since(session, datetime.utcnow() - timedelta(days=30))
+    return templates.TemplateResponse(
+        "admin/users_stats.html",
+        {
+            "request": request,
+            "total": total,
+            "last_7_days": last_7_days,
+            "recent": recent,
+            "last_30": last_30_list,
+        },
+    )

@@ -7,9 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const qrSwatches = document.querySelectorAll(".qr-swatch");
     const bgSwatches = document.querySelectorAll(".bg-swatch");
     const qrResult = document.getElementById("qrResult");
+    const qrCodeContainer = document.getElementById("qrCodeContainer");
     const qrActions = document.getElementById("qrActions");
     const qrColorValue = document.getElementById("qrColorValue");
     const bgColorValue = document.getElementById("bgColorValue");
+    const qrForm = document.getElementById("qrForm");
     let currentCanvas = null;
 
     // --- Utility ---
@@ -86,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const color = qrColorInput.value;
         const bgColor = bgColorInput.value;
         if (!data) return;
-        qrResult.innerHTML = "";
+        if (qrCodeContainer) qrCodeContainer.innerHTML = "";
         qrActions.classList.add("hidden");
         const qrContainer = document.createElement("div");
         new QRCode(qrContainer, {
@@ -97,9 +99,43 @@ document.addEventListener("DOMContentLoaded", () => {
             colorLight: bgColor,
             correctLevel: QRCode.CorrectLevel.H,
         });
-        qrResult.appendChild(qrContainer);
+        (qrCodeContainer || qrResult).appendChild(qrContainer);
+        if (qrResult) qrResult.classList.remove("hidden");
+        if (qrCodeContainer) qrCodeContainer.classList.remove("hidden");
         currentCanvas = qrContainer.querySelector("canvas");
         if (currentCanvas) qrActions.classList.remove("hidden");
+    }
+
+    // --- Form reset (clear QR image and reset previews) ---
+    if (qrForm) {
+        qrForm.addEventListener("reset", () => {
+            setTimeout(() => {
+                currentCanvas = null;
+                if (qrCodeContainer) qrCodeContainer.innerHTML = "";
+                if (qrResult) qrResult.innerHTML = "";
+                if (qrActions) qrActions.classList.add("hidden");
+                if (qrResult) qrResult.classList.add("hidden");
+                if (qrColorInput) {
+                    qrColorInput.value = "#000000";
+                    updatePreview(qrColorInput, qrColorPreview, qrSwatches, "qr");
+                    if (qrColorValue) qrColorValue.textContent = qrColorInput.value;
+                }
+                if (bgColorInput) {
+                    bgColorInput.value = "#ffffff";
+                    updatePreview(bgColorInput, bgColorPreview, bgSwatches, "bg");
+                    if (bgColorValue) bgColorValue.textContent = bgColorInput.value;
+                }
+            }, 0);
+        });
+
+        const resetBtn = document.getElementById("resetBtn");
+        if (resetBtn) {
+            resetBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                // Refresh the page to fully clear inputs and QR preview
+                window.location.reload();
+            });
+        }
     }
 
     // --- Initial state ---
@@ -134,6 +170,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     });
+
+    // Expose a global helper to clear the simple QR image when switching tabs
+    window.__clearSimpleQr = function() {
+        currentCanvas = null;
+        if (qrCodeContainer) qrCodeContainer.innerHTML = "";
+        if (qrResult) qrResult.innerHTML = "";
+        if (qrActions) qrActions.classList.add("hidden");
+        if (qrResult) qrResult.classList.add("hidden");
+    }
 
     // Initialize on load
     qrColorValue.textContent = qrColorInput.value;

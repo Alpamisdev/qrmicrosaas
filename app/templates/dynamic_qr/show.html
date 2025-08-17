@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Dynamic QR Details{% endblock %}
+{% block description %}View and edit dynamic QR and analytics{% endblock %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto mt-8 space-y-6">
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <div class="flex items-start justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">{{ qr.title or 'Untitled QR' }}</h1>
+      </div>
+      <a href="/my/dynamic" class="text-sm text-gray-600 hover:text-gray-900">Back</a>
+    </div>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <h2 class="text-lg font-semibold mb-3">QR Code</h2>
+    <!-- QR settings -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div>
+        <label for="showQrSize" class="block text-sm text-gray-600">Size</label>
+        <select id="showQrSize" class="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="200">200 x 200</option>
+          <option value="300" selected>300 x 300</option>
+          <option value="500">500 x 500</option>
+          <option value="1000">1000 x 1000</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">QR Color</label>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded border border-gray-300 cursor-pointer" id="showQrColorPreview" title="Click to pick color" style="background-color:#000000"></div>
+          <input type="color" id="showQrColor" class="sr-only" value="#000000" />
+          <span id="showQrColorValue" class="text-sm font-mono text-gray-800">#000000</span>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="button" class="show-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#000000" style="background-color:#000000"></button>
+          <button type="button" class="show-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#2563eb" style="background-color:#2563eb"></button>
+          <button type="button" class="show-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#059669" style="background-color:#059669"></button>
+          <button type="button" class="show-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#7c3aed" style="background-color:#7c3aed"></button>
+          <button type="button" class="show-qr-swatch w-6 h-6 rounded border border-gray-300" data-color="#1e293b" style="background-color:#1e293b"></button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Background</label>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded border border-gray-300 cursor-pointer" id="showBgColorPreview" title="Click to pick color" style="background-color:#ffffff"></div>
+          <input type="color" id="showBgColor" class="sr-only" value="#ffffff" />
+          <span id="showBgColorValue" class="text-sm font-mono text-gray-800">#ffffff</span>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <button type="button" class="show-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#ffffff" style="background-color:#ffffff"></button>
+          <button type="button" class="show-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#f9fafb" style="background-color:#f9fafb"></button>
+          <button type="button" class="show-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#eff6ff" style="background-color:#eff6ff"></button>
+          <button type="button" class="show-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#ecfdf5" style="background-color:#ecfdf5"></button>
+          <button type="button" class="show-bg-swatch w-8 h-8 rounded-lg border border-gray-300" data-color="#f5f3ff" style="background-color:#f5f3ff"></button>
+        </div>
+      </div>
+    </div>
+    <div id="showQrContainer" class="flex items-center justify-center"></div>
+    <p class="text-center text-sm text-gray-500 mt-3">Scan to open</p>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <h2 class="text-lg font-semibold mb-3">Destination URL</h2>
+    <form method="post" action="/d/{{ qr.short_code }}/update" class="flex gap-3">
+      <input type="url" name="destination_url" value="{{ qr.destination_url }}" class="flex-1 p-3 border rounded-xl" required />
+      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl">Update</button>
+    </form>
+  </div>
+
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <h2 class="text-lg font-semibold mb-3">Analytics</h2>
+    <p class="text-sm text-gray-600 mb-4">Total scans: {{ scans|length }}</p>
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="bg-gray-50 rounded-xl p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">Devices</h3>
+        <canvas id="chartDevices" height="120"></canvas>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">Browsers</h3>
+        <canvas id="chartBrowsers" height="120"></canvas>
+      </div>
+      <div class="bg-gray-50 rounded-xl p-4 md:col-span-2">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2">Scans over time</h3>
+        <canvas id="chartTimeline" height="140"></canvas>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">OS</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Browser</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for s in scans %}
+            <tr>
+              <td class="px-4 py-2">{{ s.scanned_at }}</td>
+              <td class="px-4 py-2">{{ s.device or '-' }}</td>
+              <td class="px-4 py-2">{{ s.os or '-' }}</td>
+              <td class="px-4 py-2">{{ s.browser or '-' }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4" class="px-4 py-6 text-center text-gray-500">No scans yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function(){
+    const stats = {{ stats_json|safe if stats_json else '{}' }};
+    if (!stats || !stats.devices) return;
+    const palette = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#14b8a6','#f43f5e','#22c55e','#0ea5e9'];
+
+    const pie = (ctx, labels, data) => new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: palette }] },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    const line = (ctx, labels, data) => new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{ data, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.15)', fill: true, tension: .3 }] },
+      options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+    });
+
+    pie(document.getElementById('chartDevices'), stats.devices.labels, stats.devices.data);
+    pie(document.getElementById('chartBrowsers'), stats.browsers.labels, stats.browsers.data);
+    line(document.getElementById('chartTimeline'), stats.dates.labels, stats.dates.data);
+  })();
+
+  // Render the QR code for this dynamic link (without showing the URL text)
+  (function(){
+    const container = document.getElementById('showQrContainer');
+    if (!container || !window.QRCode) return;
+    const path = '/r/{{ qr.short_code }}';
+    const sizeSelect = document.getElementById('showQrSize');
+    const qrColor = document.getElementById('showQrColor');
+    const qrColorPreview = document.getElementById('showQrColorPreview');
+    const qrColorValue = document.getElementById('showQrColorValue');
+    const bgColor = document.getElementById('showBgColor');
+    const bgColorPreview = document.getElementById('showBgColorPreview');
+    const bgColorValue = document.getElementById('showBgColorValue');
+
+    function render(){
+      container.innerHTML = '';
+      const size = parseInt(sizeSelect.value, 10) || 300;
+      new QRCode(container, {
+        text: window.location.origin + path,
+        width: size,
+        height: size,
+        colorDark: qrColor.value || '#000000',
+        colorLight: bgColor.value || '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+    }
+
+    function bindColor(preview, input, valueEl){
+      preview.addEventListener('click', ()=> input.click());
+      input.addEventListener('input', ()=>{
+        preview.style.backgroundColor = input.value;
+        if (valueEl) valueEl.textContent = input.value;
+        render();
+      });
+    }
+    bindColor(qrColorPreview, qrColor, qrColorValue);
+    bindColor(bgColorPreview, bgColor, bgColorValue);
+
+    document.querySelectorAll('.show-qr-swatch').forEach(btn => {
+      btn.addEventListener('click', (e)=>{
+        qrColor.value = e.currentTarget.dataset.color;
+        qrColor.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+    document.querySelectorAll('.show-bg-swatch').forEach(btn => {
+      btn.addEventListener('click', (e)=>{
+        bgColor.value = e.currentTarget.dataset.color;
+        bgColor.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+
+    sizeSelect.addEventListener('change', render);
+    // initial
+    render();
+  })();
+</script>
+{% endblock %}
+{% endblock %}
+
+

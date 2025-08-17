@@ -140,3 +140,47 @@ class SiteSettings(Base):
     site_name: Mapped[str] = mapped_column(String(100), nullable=False, default="My Site")
     google_analytics_code: Mapped[str | None] = mapped_column(Text, nullable=True)
     ad_block_code: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+# ==================================================
+# Dynamic QR codes
+# ==================================================
+class DynamicQR(Base):
+    __tablename__ = "dynamic_qr"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    short_code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    destination_url: Mapped[str] = mapped_column(Text)
+    title: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    scans: Mapped[list["QRScan"]] = relationship(
+        "QRScan", back_populates="qr", cascade="all, delete"
+    )
+
+
+class QRScan(Base):
+    __tablename__ = "qr_scans"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    qr_id: Mapped[int] = mapped_column(ForeignKey("dynamic_qr.id", ondelete="CASCADE"), index=True)
+    scanned_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    ip: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    country: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    region: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
+    device: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    os: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    browser: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    referrer: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    qr: Mapped["DynamicQR"] = relationship("DynamicQR", back_populates="scans")

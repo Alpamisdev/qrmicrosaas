@@ -17,12 +17,15 @@ from app.endpoints_auth import router as auth_router
 from app.utils.markdown import convert_markdown_to_html
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud_post import create_post, get_all_posts, get_post, update_post, delete_post
+from datetime import datetime, timedelta
+from app.crud_user import count_users, count_users_since, list_recent_users
 from app.crud_category import get_all_categories
 from app.models import PostStatus
 from app.endpoints_admin_post import router as admin_post_router
 from app.endpoints_admin_category import router as admin_category_router
 from app.endpoints_admin_tag import router as admin_tag_router
 from app.endpoints_blog import router as blog_router
+from app.endpoints_dynamic_qr import router as dynamic_qr_router
 
 app = FastAPI()
 
@@ -40,6 +43,7 @@ app.include_router(admin_category_router)
 app.include_router(admin_tag_router)
 app.include_router(blog_router)
 app.include_router(seo_router)
+app.include_router(dynamic_qr_router)
 app.include_router(auth_router)
 
 templates = Jinja2Templates(directory="app/templates")
@@ -90,7 +94,23 @@ async def admin_dashboard(request: Request):
     admin_id = request.session.get("admin_id")
     if not admin_id:
         return RedirectResponse("/admin/login")
-    return templates.TemplateResponse("admin/dashboard.html", {"request": request})
+    # Basic user stats
+    from app.db import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
+        total_users = await count_users(session)
+        last_7_days = await count_users_since(session, datetime.utcnow() - timedelta(days=7))
+        recent = await list_recent_users(session, limit=5)
+    return templates.TemplateResponse(
+        "admin/dashboard.html",
+        {
+            "request": request,
+            "user_stats": {
+                "total": total_users,
+                "last_7_days": last_7_days,
+                "recent": recent,
+            },
+        },
+    )
 
 @app.get("/admin/logout")
 async def admin_logout(request: Request):
