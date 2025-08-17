@@ -13,6 +13,7 @@ from app.endpoints_category import router as category_router
 from app.endpoints_post import router as post_router
 from app.endpoints_settings import router as settings_router
 from app.endpoints_seo import router as seo_router
+from app.endpoints_auth import router as auth_router
 from app.utils.markdown import convert_markdown_to_html
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud_post import create_post, get_all_posts, get_post, update_post, delete_post
@@ -39,6 +40,7 @@ app.include_router(admin_category_router)
 app.include_router(admin_tag_router)
 app.include_router(blog_router)
 app.include_router(seo_router)
+app.include_router(auth_router)
 
 templates = Jinja2Templates(directory="app/templates")
 
