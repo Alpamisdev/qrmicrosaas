@@ -54,4 +54,4 @@ async def blog_single(request: Request, slug: str, session: AsyncSession = Depen
             "request": request,
             "post": post,
         }
-    ) 
+    )
