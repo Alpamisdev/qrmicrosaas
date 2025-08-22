@@ -16,6 +16,13 @@
 
   <div class="bg-white p-6 rounded-2xl shadow">
     <h2 class="text-lg font-semibold mb-3">QR Code</h2>
+    <div class="flex items-center justify-between mb-3">
+      <div class="text-sm text-gray-600">
+        Short link:
+        <a href="{{ short_url }}" target="_blank" class="text-blue-600 hover:underline">{{ short_url }}</a>
+      </div>
+      <button type="button" id="copyShortUrl" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1.5 rounded-lg">Copy</button>
+    </div>
     <!-- QR settings -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
       <div>
@@ -144,7 +151,7 @@
   (function(){
     const container = document.getElementById('showQrContainer');
     if (!container || !window.QRCode) return;
-    const path = '/r/{{ qr.short_code }}';
+    const shortUrl = '{{ short_url }}';
     const sizeSelect = document.getElementById('showQrSize');
     const qrColor = document.getElementById('showQrColor');
     const qrColorPreview = document.getElementById('showQrColorPreview');
@@ -157,7 +164,7 @@
       container.innerHTML = '';
       const size = parseInt(sizeSelect.value, 10) || 300;
       new QRCode(container, {
-        text: window.location.origin + path,
+        text: shortUrl,
         width: size,
         height: size,
         colorDark: qrColor.value || '#000000',
@@ -191,6 +198,19 @@
     });
 
     sizeSelect.addEventListener('change', render);
+    // Copy button
+    (function(){
+      const btn = document.getElementById('copyShortUrl');
+      if (!btn) return;
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(shortUrl);
+          btn.textContent = 'Copied!';
+          setTimeout(()=> btn.textContent = 'Copy', 1200);
+        } catch(e) {}
+      });
+    })();
+
     // initial
     render();
   })();

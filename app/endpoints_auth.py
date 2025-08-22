@@ -21,9 +21,14 @@ load_dotenv()
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
+# Base URL of the application, used to construct absolute URLs in production
+# Defaults to the public domain for deployment but can be overridden for local dev
+APP_BASE_URL = os.getenv("APP_BASE_URL", "https://qrgenerator.world").rstrip("/")
+
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
+# Prefer explicit GOOGLE_REDIRECT_URI if provided, otherwise build from APP_BASE_URL
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI") or f"{APP_BASE_URL}/auth/google/callback"
 
 
 @router.get("/auth/login")

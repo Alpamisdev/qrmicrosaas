@@ -17,9 +17,13 @@ from datetime import datetime
 import json
 from time import monotonic
 import secrets
+import os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+# Base URL for constructing absolute short links
+APP_BASE_URL = os.getenv("APP_BASE_URL", "https://qrgenerator.world").rstrip("/")
 
 
 def get_user_id(request: Request) -> Optional[int]:
@@ -168,7 +172,13 @@ async def view_dynamic_qr(request: Request, short_code: str, session: AsyncSessi
 
     return templates.TemplateResponse(
         "dynamic_qr/show.html",
-        {"request": request, "qr": qr, "scans": scans, "stats_json": json.dumps(stats)},
+        {
+            "request": request,
+            "qr": qr,
+            "scans": scans,
+            "stats_json": json.dumps(stats),
+            "short_url": f"{APP_BASE_URL}/r/{qr.short_code}",
+        },
     )
 
 
@@ -285,6 +295,10 @@ async def api_create_dynamic_qr(
     qr = await create_dynamic_qr(
         session, user_id=user_id, short_code=short_code, destination_url=destination_url, title=title
     )
-    return {"short_code": qr.short_code, "redirect_url": f"/r/{qr.short_code}"}
+    return {
+        "short_code": qr.short_code,
+        "redirect_url": f"/r/{qr.short_code}",
+        "absolute_redirect_url": f"{APP_BASE_URL}/r/{qr.short_code}",
+    }
 
 

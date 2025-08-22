@@ -315,11 +315,11 @@ Generate high-quality QR codes instantly with our free and easy-to-use online to
           return;
         }
         const data = await resp.json();
-        // Render QR for redirect_url, but do not show the short link
+        // Render QR for the absolute short URL (fallback to origin+path)
         dynQrContainer.innerHTML = '';
         const container = document.createElement('div');
         new QRCode(container, {
-          text: window.location.origin + data.redirect_url,
+          text: (data && data.absolute_redirect_url) ? data.absolute_redirect_url : (window.location.origin + data.redirect_url),
           width: size,
           height: size,
           colorDark,
