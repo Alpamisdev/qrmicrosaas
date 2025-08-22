@@ -14,6 +14,7 @@ from app.crud_user import (
     get_user_by_email,
     get_user_by_id,
 )
+from app.crud_subscription import get_latest_subscription_for_user
 
 
 load_dotenv(override=True)
@@ -134,7 +135,8 @@ async def dashboard(request: Request, session: AsyncSession = Depends(get_async_
     if not user_id:
         return RedirectResponse("/auth/login")
     user = await get_user_by_id(session, int(user_id))
-    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user})
+    subscription = await get_latest_subscription_for_user(session, user.id) if user else None
+    return templates.TemplateResponse("dashboard.html", {"request": request, "user": user, "subscription": subscription})
 
 
 @router.get("/profile")

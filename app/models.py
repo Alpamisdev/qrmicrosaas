@@ -41,6 +41,12 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
+    # Subscriptions
+    subscriptions: Mapped[list["Subscription"]] = relationship(
+        "Subscription",
+        cascade="all, delete",
+    )
+
 
 # ==================================================
 # Admin
@@ -184,3 +190,21 @@ class QRScan(Base):
     referrer: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     qr: Mapped["DynamicQR"] = relationship("DynamicQR", back_populates="scans")
+
+
+# ==================================================
+# Subscriptions
+# ==================================================
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    lemon_id: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(50), index=True)
+    plan: Mapped[str] = mapped_column(String(50), index=True)
+    renews_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    ends_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

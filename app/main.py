@@ -8,6 +8,8 @@ from app.crud_admin import get_admin_by_username
 from app.db import get_async_session
 from passlib.context import CryptContext
 from app.endpoints_admin import router as admin_router
+from app.crud_subscription import set_user_free_plan, get_latest_subscription_for_user
+from app.crud_user import get_user_by_id
 from app.endpoints_tag import router as tag_router
 from app.endpoints_category import router as category_router
 from app.endpoints_post import router as post_router
@@ -26,6 +28,8 @@ from app.endpoints_admin_category import router as admin_category_router
 from app.endpoints_admin_tag import router as admin_tag_router
 from app.endpoints_blog import router as blog_router
 from app.endpoints_dynamic_qr import router as dynamic_qr_router
+from app.endpoints_subscriptions import router as subscriptions_router
+from app.endpoints_webhook import router as webhook_router
 
 app = FastAPI()
 
@@ -45,6 +49,8 @@ app.include_router(blog_router)
 app.include_router(seo_router)
 app.include_router(dynamic_qr_router)
 app.include_router(auth_router)
+app.include_router(subscriptions_router)
+app.include_router(webhook_router)
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -116,6 +122,47 @@ async def admin_dashboard(request: Request):
 async def admin_logout(request: Request):
     request.session.clear()
     return RedirectResponse("/admin/login", status_code=302)
+
+
+@app.post("/admin/grant-free/{user_id}")
+async def admin_grant_free(request: Request, user_id: int, session: AsyncSession = Depends(get_async_session)):
+    admin_id = request.session.get("admin_id")
+    if not admin_id:
+        return RedirectResponse("/admin/login")
+    user = await get_user_by_id(session, user_id)
+    if not user:
+        return RedirectResponse("/admins/admin/users")
+    await set_user_free_plan(session, user_id)
+    return RedirectResponse("/admins/admin/users", status_code=302)
+
+
+@app.post("/admin/cancel/{user_id}")
+async def admin_cancel_user_subscription(request: Request, user_id: int, session: AsyncSession = Depends(get_async_session)):
+    admin_id = request.session.get("admin_id")
+    if not admin_id:
+        return RedirectResponse("/admin/login")
+    user = await get_user_by_id(session, user_id)
+    if not user:
+        return RedirectResponse("/admins/admin/users")
+    sub = await get_latest_subscription_for_user(session, user_id)
+    if sub and sub.lemon_id:
+        import os, httpx
+        api_key = os.getenv("LEMON_API_KEY")
+        if api_key:
+            url = f"https://api.lemonsqueezy.com/v1/subscriptions/{sub.lemon_id}"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Accept": "application/vnd.api+json",
+                "Content-Type": "application/vnd.api+json",
+            }
+            try:
+                async with httpx.AsyncClient(timeout=30) as client:
+                    await client.delete(url, headers=headers)
+            except Exception:
+                pass
+        from app.crud_subscription import update_subscription
+        await update_subscription(session, sub.id, status="canceled")
+    return RedirectResponse("/admins/admin/users", status_code=302)
 
 @app.get("/admin/posts/new", response_class=HTMLResponse)
 async def admin_post_form(request: Request, session: AsyncSession = Depends(get_async_session)):

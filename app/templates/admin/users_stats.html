@@ -43,6 +43,16 @@
               <td class="px-4 py-2">{{ u.name or '-' }}</td>
               <td class="px-4 py-2">{{ u.created_at }}</td>
             </tr>
+            <tr class="bg-gray-50">
+              <td colspan="3" class="px-4 py-2 text-sm">
+                <form method="post" action="/admin/grant-free/{{ u.id }}" class="inline">
+                  <button class="text-emerald-600 hover:underline">Grant Free</button>
+                </form>
+                <form method="post" action="/admin/cancel/{{ u.id }}" class="inline ml-3" onsubmit="return confirm('Cancel user subscription?');">
+                  <button class="text-red-600 hover:underline">Cancel Sub</button>
+                </form>
+              </td>
+            </tr>
           {% else %}
             <tr>
               <td colspan="3" class="px-4 py-6 text-center text-gray-500">No users found.</td>
