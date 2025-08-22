@@ -16,19 +16,24 @@ from app.crud_user import (
 )
 
 
-load_dotenv()
+load_dotenv(override=True)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-# Base URL of the application, used to construct absolute URLs in production
-# Defaults to the public domain for deployment but can be overridden for local dev
-APP_BASE_URL = os.getenv("APP_BASE_URL", "https://qrgenerator.world").rstrip("/")
+def _infer_base_url(request: Request) -> str:
+    app_base = os.getenv("APP_BASE_URL")
+    if app_base:
+        return app_base.rstrip("/")
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.url.netloc
+    return f"{proto}://{host}".rstrip("/")
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-# Prefer explicit GOOGLE_REDIRECT_URI if provided, otherwise build from APP_BASE_URL
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI") or f"{APP_BASE_URL}/auth/google/callback"
+def _get_redirect_uri(request: Request) -> str:
+    explicit = os.getenv("GOOGLE_REDIRECT_URI")
+    if explicit:
+        return explicit
+    return f"{_infer_base_url(request)}/auth/google/callback"
 
 
 @router.get("/auth/login")
@@ -37,13 +42,15 @@ async def login_page(request: Request):
 
 
 @router.get("/auth/google")
-async def start_google_oauth():
-    if not GOOGLE_CLIENT_ID:
+async def start_google_oauth(request: Request):
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    if not client_id:
         raise HTTPException(status_code=500, detail="Google OAuth not configured")
 
+    redirect_uri = _get_redirect_uri(request)
     params = {
-        "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": "openid email profile",
         "access_type": "offline",
@@ -60,11 +67,11 @@ async def google_callback(request: Request, code: str, session: AsyncSession = D
 
     token_url = "https://oauth2.googleapis.com/token"
     token_data = {
-        "client_id": GOOGLE_CLIENT_ID,
-        "client_secret": GOOGLE_CLIENT_SECRET,
+        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "redirect_uri": _get_redirect_uri(request),
     }
 
     try:
